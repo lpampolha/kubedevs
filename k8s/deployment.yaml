@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubedev
+spec:
+  selector: 
+    matchLabels:
+      app: kubedev
+  template:
+    metadata:
+      labels:
+        app: kubedev
+    spec:
+      containers:
+        - name: kubedev
+          image: postgres:15.0
+          ports: 
+          - containerPort: 5432
+          env:
+          - name: POSTGRES_DB
+            value: "kubedev" 
+          - name: POSTGRES_USER
+            value: "kubedev"
+          - name: POSTGRES_PASSWORD
+            value: 123456
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubedev
+spec:
+  selector:
+    app: kubedev
+  ports: 
+    - port: 5432
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  selector: 
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: kubedev
+          image: lpampolha/kubedev:v1
+          ports: 
+          - containerPort: 8080
+          env:
+          - name: DB_DATABASE
+            value: "kubedev" 
+          - name: DB_USERNAME
+            value: "kubedev"
+          - name: DB_PASSWORD
+            value: 123456 
+          - name: DB_HOST
+            value: "postgre"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubedev
+spec:
+  selector:
+    app: kubedev
+  ports: 
+    - port: 80
+      targetPort: 8080
+      nodePort: 30000
+  type: NodePort
